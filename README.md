@@ -1,9 +1,3 @@
-# tick-nhmrc-wl-(In RStudio)
-
-
-#Script adapted from http://siobhonlegan.com/wildlife-bacteria/phyloseq.html#2_Decontam
-#Reminder: update files' pathways before running each time!
-
 pkgs <- c("qiime2R", "phyloseq", "tidyverse", "ampvis2", "ampvis2extras", 
           "ggpubr", "agricolae", "plotly", "viridis", "cowplot", "MicrobeR", 
           "microbiome", "reshape", "decontam", "data.table", "ape", "DESeq2", 
@@ -35,26 +29,26 @@ taxonomy_lab = column_to_rownames(taxonomy, var = "Feature ID")
 #--output-path Rep-seqs/
 
 # read sequence file
-rep.seqs <- Biostrings::readDNAStringSet("~/Desktop/ticks-dna-sequences.fasta", format = "fasta")
+rep.seqs <- Biostrings::readDNAStringSet("~/Desktop/skin-dna-sequences.fasta", format = "fasta")
 
 # important sequence metadata- *Important: make sure sample names and matched AGRF-ID are listed in the spreadsheet in the same order as "dada2_ASVs". 
 library(readr)
-metadata <- read_tsv("~/Desktop/metadata-tick.tsv")
+metadata <- read_tsv("~/Desktop/metadata-skin.tsv")
 
 
 #metadata <- read_csv("~/Desktop/NGS-Bioinformatics-Jan2023/Limit of Detection/sample-metadata-new-decont-corrected.csv",
-                     #col_types = cols(
-                       #SampleType = col_factor(levels =c("categorical","Sample", "Control", "Zymo")),
-                       #SampleCategory = col_factor(levels = c("categorical", "Blood", 
-                                    #"EBlank", "PC","NC")),
-                       #gDNAID = col_factor(levels = c("categorical","pw","mtb","ctp1795-1","ctp1795-2","mdb68","k372","hc7","ra",
-                                                      #"pw_2","mtb_2","ctp1795-1_2","ctp1795-2_2","mdb68_2","k372_2","hc7_2","ra_2",
-                                                      #"pw_3","mtb_3","ctp1795-1_3","ctp1795-2_3","mdb68_3","k372_3","hc7_3","ra_3",
-                                                      #"co1","co2","co3","co4","co5","co6","co7","co8",
-                                                      #"co1_2","co2_2","co3_2","co4_2","co5_2","co6_2","co7_2","co8_2",
-                                                      #"co1_3","co2_3","co3_3","co4_3","co5_3","co6_3","co7_3","co8_3","co","co_2","co_3",
-                                                      #"ad5","ad5_2","ad5_3","ajm","ajm_2","ajm_3","donor","donor_2","donor_3",
-                                                      #"EBC1","EBC2","EBC3","EBC4","EBC5","PC","NTC"))))
+#col_types = cols(
+#SampleType = col_factor(levels =c("categorical","Sample", "Control", "Zymo")),
+#SampleCategory = col_factor(levels = c("categorical", "Blood", 
+#"EBlank", "PC","NC")),
+#gDNAID = col_factor(levels = c("categorical","pw","mtb","ctp1795-1","ctp1795-2","mdb68","k372","hc7","ra",
+#"pw_2","mtb_2","ctp1795-1_2","ctp1795-2_2","mdb68_2","k372_2","hc7_2","ra_2",
+#"pw_3","mtb_3","ctp1795-1_3","ctp1795-2_3","mdb68_3","k372_3","hc7_3","ra_3",
+#"co1","co2","co3","co4","co5","co6","co7","co8",
+#"co1_2","co2_2","co3_2","co4_2","co5_2","co6_2","co7_2","co8_2",
+#"co1_3","co2_3","co3_3","co4_3","co5_3","co6_3","co7_3","co8_3","co","co_2","co_3",
+#"ad5","ad5_2","ad5_3","ajm","ajm_2","ajm_3","donor","donor_2","donor_3",
+#"EBC1","EBC2","EBC3","EBC4","EBC5","PC","NTC"))))
 
 library(phyloseq)
 
@@ -71,6 +65,7 @@ library(dplyr)
 OldName <- colnames(dada2_ASVs_lab)
 NewName <- rownames(metadata_lab)
 dada2_ASVs_lab_renamed <- dada2_ASVs_lab %>% rename_at(all_of(OldName), ~ NewName)
+
 # ***Check if AGRF IDs were replaced by matched sample Id's from metadata table.
 
 # Make OTU matrix
@@ -102,7 +97,7 @@ Nice.Table(ps_raw_bact@sam_data)
 #Install Bioconductor package for R >4.2
 
 #if (!require("BiocManager", quietly = TRUE))
-  #install.packages("BiocManager")
+#install.packages("BiocManager")
 #BiocManager::install("decontam")
 
 library(decontam)
@@ -120,7 +115,7 @@ df$LibrarySize <- sample_sums(phyloseq_object_all)
 
 df <- df[order(df$LibrarySize),]
 df$Index <- seq(nrow(df))
-libQC <- ggplot(data=df, aes(x=Index, y=LibrarySize, color="organism")) + geom_point()
+libQC <- ggplot(data=df, aes(x=Index, y=LibrarySize, color="SampleType")) + geom_point()
 ggsave("libQC.pdf", plot = libQC, path = "~/Desktop", width = 10, height = 10, units = "cm")
 
 #Make html plot with plotly
@@ -182,25 +177,25 @@ library(dplyr)
 distrib <- plot_read_distribution(phyloseq_object_all, groups = "site", 
                                   plot.type = "density") + xlab("Reads per sample") + ylab("Density")
 distrib <- distrib + geom_density(alpha = 0.5, fill = "grey")
-ggsave("distrib.pdf", plot = distrib, path = "~/Desktop", width = 15, height = 10, units = "cm")
+ggsave("distrib.pdf", plot = distrib, path ="~/Desktop", width = 15, height = 10, units = "cm")
 
 hist(contamdf.prev$p, n=100)
 
 #Reminder: ps_raw_bact file in Siobhon's script = phyloseq_object_all in my script
-#If no contaminants identified using this method (apparently common if analysing low biomass samples), consider manipulating/removing taxa found in the EBs and NCs from clinical samples)
+#If no contaminants identified using this method (apparently common if analysing low biomass samples), consider removing taxa found in the EBs and NCs from clinical samples)
 #i.e. explore how much overlap there is between the taxa found in the extraction control and the true samples, and then perhaps remove most if not all of the taxa present in the negative control.
 #Findings: all taxa in EB and NC are present in samples in higher numbers, so will not remove them manually. I would do if for instance there were taxa with 10 reads in clinical sample A, which had 50000 reads in the negative control.
 #I will however inspect all ASVs present in EBs and NC and if they are environmental (i.e. not pathogens), I will create a separate file phyloseq_no_EBNCcont (ASVs in EBs, NCs) for additional analysis and compare at the end. Code below:
 
-badTaxa = c("xxxxxxx->ASV id")
+badTaxa = c("12cf958aac38df753bd74152c9de7b19")
 allTaxa = taxa_names(phyloseq_object_all)
 allTaxa <- allTaxa[!(allTaxa %in% badTaxa)]
-phyloseq_no_EBNCcont = prune_taxa(allTaxa, phyloseq_object_all)
+phyloseq_no_cont = prune_taxa(allTaxa, phyloseq_object_all)
 # new phyloseq object with just the taxa I kept= phyloseq_no_EBNC
 
 #Save R data for phyloseq object - saving “raw data” (phyloseq_object_all) and “decontaminated data” (phyloseq_no_EBNCcont)
 save(phyloseq_object_all, file = "~/Desktop/phyloseq_object_all.RData")
-save(phyloseq_no_EBNCcont, file = "~/Desktop/phyloseq_no_EBNCcont.RData")
+save(phyloseq_no_cont, file = "~/Desktop/phyloseq_no_cont.RData")
 
 #NEXT STEPS: 3 AND 4 (http://siobhonlegan.com/wildlife-bacteria/phyloseq.html#3_Load_data_and_subset)
 #NEXT STEPS: Microbiome visualisation and stats (https://microsud.github.io/microbiomeutilities/articles/microbiomeutilities.html#abundance-prevalence-relationship and http://siobhonlegan.com/wildlife-bacteria/microbiome-viz.html#3_Abundance-Prevalence_relationship)
