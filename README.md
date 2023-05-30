@@ -197,6 +197,18 @@ phyloseq_no_cont = prune_taxa(allTaxa, phyloseq_object_all)
 save(phyloseq_object_all, file = "~/Desktop/phyloseq_object_all.RData")
 save(phyloseq_no_cont, file = "~/Desktop/phyloseq_no_cont.RData")
 
+#If after inspection want to remove additional or all taxa from EBs and NCs, use "badTaxa" again and then the code below to convert key phyloseq objects into excel files. These will be created in the "home" directory:
+
+phyloseq_no_cont@tax_table
+otu_df <- phyloseq_no_cont@otu_table
+write.csv (otu_df, "otu_df")
+
+tax_df <- phyloseq_no_cont@tax_table
+write.csv(tax_df, "tax_df")
+
+sam_df <- phyloseq_no_cont@sam_data
+write.csv(sam_df,"sam_df.csv")
+
 #NEXT STEPS: 3 AND 4 (http://siobhonlegan.com/wildlife-bacteria/phyloseq.html#3_Load_data_and_subset)
 #NEXT STEPS: Microbiome visualisation and stats (https://microsud.github.io/microbiomeutilities/articles/microbiomeutilities.html#abundance-prevalence-relationship and http://siobhonlegan.com/wildlife-bacteria/microbiome-viz.html#3_Abundance-Prevalence_relationship)
 
